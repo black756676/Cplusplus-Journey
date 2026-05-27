@@ -1,0 +1,12 @@
+# Count zeros in an array
+
+arr = [0, 5, -2, 0, 8, 0]
+
+target = 0
+count = 0
+
+for i in range(len(arr)):
+    if arr[i] == target:
+        count = count + 1
+
+print("Zero Count:", count)
