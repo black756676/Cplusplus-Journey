@@ -1,0 +1,65 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <map>
+#include <sstream>
+using namespace std;
+
+int main() {
+    ifstream file("auth_log.txt");
+
+    string line;
+    map<string, int> failedCount;
+    int totalLines = 0;
+    int totalFailed = 0;
+
+    if (!file) {
+        cout << "Log file not found. Please create auth_log.txt first." << endl;
+        return 0;
+    }
+
+    while (getline(file, line)) {
+        string date;
+        string username;
+        string status;
+
+        stringstream ss(line);
+        ss >> date >> username >> status;
+
+        totalLines++;
+
+        if (status == "failed") {
+            failedCount[username]++;
+            totalFailed++;
+        }
+    }
+
+    file.close();
+
+    cout << "===== Failed Login Analyzer =====" << endl;
+    cout << "Total log lines checked: " << totalLines << endl;
+    cout << "Total failed logins: " << totalFailed << endl;
+    cout << endl;
+
+    if (failedCount.size() == 0) {
+        cout << "No failed login attempts found." << endl;
+        return 0;
+    }
+
+    cout << "Failed Login Details:" << endl;
+
+    for (auto user : failedCount) {
+        cout << "User: " << user.first << endl;
+        cout << "Failed attempts: " << user.second << endl;
+
+        if (user.second >= 3) {
+            cout << "Status: Suspicious activity detected" << endl;
+        } else {
+            cout << "Status: Normal" << endl;
+        }
+
+        cout << endl;
+    }
+
+    return 0;
+}
