@@ -1,0 +1,62 @@
+#include <iostream>
+#include <string>
+#include <vector>
+#include <cctype>
+using namespace std;
+
+string toLowerCase(string text) {
+    for (int i = 0; i < text.length(); i++) {
+        text[i] = tolower(text[i]);
+    }
+    return text;
+}
+
+int main() {
+    string url;
+    int riskScore = 0;
+
+    vector<string> suspiciousWords = {
+        "free", "gift", "winner", "verify", "login", "password", "bank", "urgent"
+    };
+
+    cout << "===== Suspicious URL Checker =====" << endl;
+    cout << "Enter URL: ";
+    getline(cin, url);
+
+    string lowerUrl = toLowerCase(url);
+
+    if (lowerUrl.find("https://") == string::npos) {
+        riskScore++;
+        cout << "Warning: URL does not use HTTPS" << endl;
+    }
+
+    if (lowerUrl.find("@") != string::npos) {
+        riskScore++;
+        cout << "Warning: URL contains @ symbol" << endl;
+    }
+
+    if (lowerUrl.length() > 75) {
+        riskScore++;
+        cout << "Warning: URL is very long" << endl;
+    }
+
+    for (int i = 0; i < suspiciousWords.size(); i++) {
+        if (lowerUrl.find(suspiciousWords[i]) != string::npos) {
+            riskScore++;
+            cout << "Warning: Suspicious word found: " << suspiciousWords[i] << endl;
+        }
+    }
+
+    cout << endl;
+    cout << "Risk Score: " << riskScore << endl;
+
+    if (riskScore == 0) {
+        cout << "Result: Looks normal" << endl;
+    } else if (riskScore <= 2) {
+        cout << "Result: Be careful" << endl;
+    } else {
+        cout << "Result: Suspicious URL" << endl;
+    }
+
+    return 0;
+}
