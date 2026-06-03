@@ -1,0 +1,86 @@
+#include <iostream>
+#include <fstream>
+#include <string>
+#include <vector>
+#include <cctype>
+using namespace std;
+
+string toLowerCase(string text) {
+    for (int i = 0; i < text.length(); i++) {
+        text[i] = tolower(text[i]);
+    }
+    return text;
+}
+
+bool endsWith(string text, string ending) {
+    if (ending.length() > text.length()) {
+        return false;
+    }
+
+    int start = text.length() - ending.length();
+
+    for (int i = 0; i < ending.length(); i++) {
+        if (text[start + i] != ending[i]) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+int main() {
+    ifstream file("files.txt");
+    string fileName;
+    int totalFiles = 0;
+    int suspiciousFiles = 0;
+
+    vector<string> suspiciousExtensions = {
+        ".exe", ".bat", ".cmd", ".ps1", ".vbs", ".scr"
+    };
+
+    vector<string> suspiciousWords = {
+        "crack", "keygen", "password", "free", "hack", "login"
+    };
+
+    if (!file) {
+        cout << "files.txt not found" << endl;
+        return 0;
+    }
+
+    cout << "===== Suspicious File Scanner =====" << endl;
+
+    while (getline(file, fileName)) {
+        totalFiles++;
+
+        string lowerName = toLowerCase(fileName);
+        int riskScore = 0;
+
+        for (int i = 0; i < suspiciousExtensions.size(); i++) {
+            if (endsWith(lowerName, suspiciousExtensions[i])) {
+                riskScore++;
+            }
+        }
+
+        for (int i = 0; i < suspiciousWords.size(); i++) {
+            if (lowerName.find(suspiciousWords[i]) != string::npos) {
+                riskScore++;
+            }
+        }
+
+        if (riskScore > 0) {
+            suspiciousFiles++;
+
+            cout << "Suspicious file found: " << fileName << endl;
+            cout << "Risk score: " << riskScore << endl;
+            cout << endl;
+        }
+    }
+
+    file.close();
+
+    cout << "===== Scan Summary =====" << endl;
+    cout << "Total files checked: " << totalFiles << endl;
+    cout << "Suspicious files found: " << suspiciousFiles << endl;
+
+    return 0;
+}
