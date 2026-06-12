@@ -1,0 +1,98 @@
+#include <iostream>
+#include <filesystem>
+#include <unordered_set>
+#include <algorithm>
+#include <string>
+using namespace std;
+
+namespace fs = filesystem;
+
+string toLowerCase(string text) {
+    transform(text.begin(), text.end(), text.begin(),
+              [](unsigned char ch) {
+                  return tolower(ch);
+              });
+
+    return text;
+}
+
+bool hasDoubleExtension(const fs::path& filePath) {
+    string name = filePath.filename().string();
+
+    size_t firstDot = name.find('.');
+    size_t lastDot = name.rfind('.');
+
+    return firstDot != string::npos &&
+           firstDot != lastDot &&
+           firstDot != 0;
+}
+
+int main() {
+    unordered_set<string> riskyExtensions = {
+        ".exe", ".bat", ".cmd", ".vbs",
+        ".ps1", ".scr", ".dll", ".js"
+    };
+
+    string folderPath;
+    int totalFiles = 0;
+    int suspiciousFiles = 0;
+
+    cout << "===== Suspicious File Auditor =====" << endl;
+    cout << "Enter folder path: ";
+    getline(cin, folderPath);
+
+    if (!fs::exists(folderPath)) {
+        cout << "Folder does not exist." << endl;
+        return 0;
+    }
+
+    try {
+        for (const auto& entry :
+             fs::recursive_directory_iterator(
+                 folderPath,
+                 fs::directory_options::skip_permission_denied)) {
+
+            if (!entry.is_regular_file()) {
+                continue;
+            }
+
+            totalFiles++;
+
+            fs::path filePath = entry.path();
+            string extension = toLowerCase(filePath.extension().string());
+
+            bool riskyExtension =
+                riskyExtensions.find(extension) != riskyExtensions.end();
+
+            bool doubleExtension = hasDoubleExtension(filePath);
+
+            if (riskyExtension || doubleExtension) {
+                suspiciousFiles++;
+
+                cout << endl;
+                cout << "Review required: " << filePath.string() << endl;
+
+                if (riskyExtension) {
+                    cout << "- Risky extension: " << extension << endl;
+                }
+
+                if (doubleExtension) {
+                    cout << "- Double extension detected" << endl;
+                }
+            }
+        }
+    } catch (const fs::filesystem_error& error) {
+        cout << "Scan error: " << error.what() << endl;
+    }
+
+    cout << endl;
+    cout << "===== Audit Summary =====" << endl;
+    cout << "Total files checked: " << totalFiles << endl;
+    cout << "Files requiring review: " << suspiciousFiles << endl;
+
+    cout << endl;
+    cout << "Note: A flagged filename does not prove that a file is malicious."
+         << endl;
+
+    return 0;
+}
